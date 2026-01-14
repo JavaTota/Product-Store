@@ -10,7 +10,7 @@ export const getProducts = async (req, res) => {
   }
 };
 
-export const createProducts = async (req, res) => {
+export const createProduct = async (req, res) => {
   const product = req.body;
   if (!product.name || !product.price || !product.image) {
     return res
