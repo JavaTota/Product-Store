@@ -17,6 +17,7 @@ export const createProduct = async (req, res) => {
       .status(400)
       .json({ success: false, message: "Missing required fields" });
   }
+
   const newProduct = await Product.create(product);
 
   try {
@@ -24,7 +25,7 @@ export const createProduct = async (req, res) => {
     res.status(201).json({ success: true, data: newProduct });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 

@@ -28,9 +28,13 @@ export const useProductStore = create((set) => ({
       return { success: true, message: "Product created successfully" };
     } catch (err) {
       console.error(err);
+      if (isNaN(newProduct.price)) {
+        return { success: false, message: "Price must be a number" };
+      }
       return { success: false, message: "Server error" };
     }
   },
+
   deleteProduct: async (productId) => {
     try {
       await fetch(`/api/products/${productId}`, {
@@ -44,6 +48,7 @@ export const useProductStore = create((set) => ({
       console.error(err);
     }
   },
+
   updateProduct: async (updatedProduct) => {
     try {
       const response = await fetch(`/api/products/${updatedProduct.id}`, {
@@ -65,6 +70,7 @@ export const useProductStore = create((set) => ({
       console.error(err);
     }
   },
+
   getProducts: async () => {
     try {
       const response = await fetch("/api/products");

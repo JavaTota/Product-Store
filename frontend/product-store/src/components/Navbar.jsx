@@ -6,9 +6,11 @@ import { HStack } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
+import { useColorMode } from "./ui/color-mode";
 import { CiSquarePlus } from "react-icons/ci";
 
-const Navbar = ({ colorMode, toggleColorMode }) => {
+const Navbar = () => {
+  const { colorMode, toggleColorMode } = useColorMode();
   return (
     <Container
       maxW={"full"}
