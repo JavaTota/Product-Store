@@ -12,7 +12,13 @@ export const getProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   const product = req.body;
-  if (!product.name || !product.price || !product.image) {
+
+  if (
+    !product.name ||
+    !product.price ||
+    !product.image ||
+    !product.description
+  ) {
     return res
       .status(400)
       .json({ success: false, message: "Missing required fields" });

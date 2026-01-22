@@ -4,6 +4,8 @@ import { Box } from "@chakra-ui/react";
 import { Route, Routes } from "react-router-dom";
 import { Toaster } from "./components/ui/toaster.jsx";
 
+import { Cloudinary } from "@cloudinary/url-gen";
+
 import CreatePage from "./pages/CreatePage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import Navbar from "./components/Navbar.jsx";
