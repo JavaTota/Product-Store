@@ -13,6 +13,14 @@ export const uploadImage = async (req, res) => {
 
     const uploaded = await cloudinary.uploader.upload(fileStr, {
       folder: "products",
+      transformation: [
+        {
+          width: 800,
+          height: 800,
+          crop: "fill",
+          gravity: "auto",
+        },
+      ],
     });
 
     res.status(200).json({

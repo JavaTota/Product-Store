@@ -13,9 +13,7 @@ export const useProductStore = create((set) => ({
     try {
       const response = await fetch("/api/products", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newProduct),
       });
 
@@ -25,12 +23,9 @@ export const useProductStore = create((set) => ({
         products: [...state.products, data.data],
       }));
 
-      return { success: true, message: "Product created successfully" };
+      return { success: true };
     } catch (err) {
       console.error(err);
-      if (isNaN(newProduct.price)) {
-        return { success: false, message: "Price must be a number" };
-      }
       return { success: false, message: "Server error" };
     }
   },
@@ -42,7 +37,7 @@ export const useProductStore = create((set) => ({
       });
 
       set((state) => ({
-        products: state.products.filter((product) => product.id !== productId),
+        products: state.products.filter((product) => product._id !== productId),
       }));
     } catch (err) {
       console.error(err);
@@ -51,11 +46,9 @@ export const useProductStore = create((set) => ({
 
   updateProduct: async (updatedProduct) => {
     try {
-      const response = await fetch(`/api/products/${updatedProduct.id}`, {
+      const response = await fetch(`/api/products/${updatedProduct._id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedProduct),
       });
 
@@ -63,11 +56,14 @@ export const useProductStore = create((set) => ({
 
       set((state) => ({
         products: state.products.map((product) =>
-          product.id === updatedProduct.id ? data.data : product
+          product._id === updatedProduct._id ? data.data : product,
         ),
       }));
+
+      return { success: true };
     } catch (err) {
       console.error(err);
+      return { success: false, message: "Update failed" };
     }
   },
 
@@ -78,6 +74,17 @@ export const useProductStore = create((set) => ({
       set({ products: data.data });
     } catch (err) {
       console.error(err);
+    }
+  },
+
+  getProductById: async (productId) => {
+    try {
+      const response = await fetch(`/api/products/${productId}`);
+      const data = await response.json();
+      return data.data;
+    } catch (err) {
+      console.error(err);
+      return null;
     }
   },
 }));

@@ -9,11 +9,16 @@ import { useProductStore } from "../store/product";
 import { useColorMode } from "../components/ui/color-mode";
 
 const HomePage = () => {
-  const products = [];
+  const products = useProductStore((state) => state.products);
 
   const getProducts = useProductStore((state) => state.getProducts);
 
   const { colorMode } = useColorMode();
+  const deleteProduct = useProductStore((state) => state.deleteProduct);
+
+  const handleDelete = async (id) => {
+    await deleteProduct(id);
+  };
 
   useEffect(() => {
     getProducts();
@@ -52,8 +57,11 @@ const HomePage = () => {
               overflow="hidden"
             >
               <Image
-                src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
-                alt="Green double couch with wooden legs"
+                src={
+                  product.image ||
+                  "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
+                }
+                alt={product.name}
                 style={{ borderRadius: "8px 8px 0 0" }}
               />
               <Card.Body gap="2">
@@ -71,8 +79,15 @@ const HomePage = () => {
                 </Text>
               </Card.Body>
               <Card.Footer gap="2">
-                <Button variant="solid">Delete</Button>
-                <Button variant="outline">Update</Button>
+                <Button
+                  variant="solid"
+                  onClick={() => handleDelete(product._id)}
+                >
+                  Delete
+                </Button>
+                <Button variant="outline">
+                  <Link to={`/update/${product._id}`}>Update</Link>
+                </Button>
               </Card.Footer>
             </Card.Root>
           ))}

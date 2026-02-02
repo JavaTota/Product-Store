@@ -12,11 +12,13 @@ import {
 import { Box, VStack } from "@chakra-ui/react";
 import { toaster } from "../components/ui/toaster.jsx";
 
+import { useParsedPrice } from "../store/parse_price.js";
 import { useProductStore } from "../store/product.js";
 import { useColorMode } from "../components/ui/color-mode.jsx";
 
 const CreatePage = () => {
   const { colorMode } = useColorMode();
+  const { parsePrice } = useParsedPrice();
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -30,20 +32,6 @@ const CreatePage = () => {
 
   const [files, setFiles] = useState([]);
   const [fileKey, setFileKey] = useState(0);
-
-  const parsePrice = (value) => {
-    if (!value) return null;
-
-    // Remove spaces
-    let cleaned = value.trim();
-
-    // Convert EU format → US format
-    cleaned = cleaned.replace(/\./g, "").replace(",", ".");
-
-    const number = Number(cleaned);
-
-    return isNaN(number) ? null : number;
-  };
 
   const handleImageUpload = async (file) => {
     setUploading(true);
