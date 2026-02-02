@@ -11,9 +11,13 @@ const productSchema = mongoose.Schema(
       type: Number,
       required: true,
     },
-    image: {
-      type: String,
+    images: {
+      type: [String],
       required: true,
+      validate: {
+        validator: (v) => Array.isArray(v) && v.length > 0,
+        message: "At least one image is required",
+      },
     },
     description: {
       type: String,
@@ -22,7 +26,7 @@ const productSchema = mongoose.Schema(
   },
   {
     timestamps: true, //createdAt, updatedAt
-  }
+  },
 );
 
 export const Product = mongoose.model("Product", productSchema);

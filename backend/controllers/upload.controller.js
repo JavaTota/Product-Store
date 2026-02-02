@@ -1,37 +1,38 @@
 import cloudinary from "../config/cloudinary.js";
 
-export const uploadImage = async (req, res) => {
+export const uploadImages = async (req, res) => {
   try {
-    const fileStr = req.body.image;
+    const { images } = req.body;
 
-    if (!fileStr) {
+    if (!images || !images.length) {
       return res.status(400).json({
         success: false,
-        message: "No image provided",
+        message: "No images provided",
       });
     }
 
-    const uploaded = await cloudinary.uploader.upload(fileStr, {
-      folder: "products",
-      transformation: [
-        {
-          width: 800,
-          height: 800,
-          crop: "fill",
-          gravity: "auto",
-        },
-      ],
-    });
+    const uploads = await Promise.all(
+      images.map((img) =>
+        cloudinary.uploader.upload(img, {
+          folder: "products",
+          transformation: [
+            { width: 800, height: 800, crop: "fill", gravity: "auto" },
+          ],
+        }),
+      ),
+    );
+
+    const urls = uploads.map((u) => u.secure_url);
 
     res.status(200).json({
       success: true,
-      url: uploaded.secure_url,
+      urls,
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: "Image upload failed",
+      message: "Images upload failed",
     });
   }
 };

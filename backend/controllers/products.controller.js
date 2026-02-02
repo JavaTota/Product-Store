@@ -30,7 +30,8 @@ export const createProduct = async (req, res) => {
   if (
     !product.name ||
     !product.price ||
-    !product.image ||
+    !product.images ||
+    product.images.length === 0 ||
     !product.description
   ) {
     return res
@@ -38,10 +39,8 @@ export const createProduct = async (req, res) => {
       .json({ success: false, message: "Missing required fields" });
   }
 
-  const newProduct = await Product.create(product);
-
   try {
-    await newProduct.save();
+    const newProduct = await Product.create(product);
     res.status(201).json({ success: true, data: newProduct });
   } catch (err) {
     console.error(err);

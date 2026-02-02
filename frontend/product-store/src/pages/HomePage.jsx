@@ -1,12 +1,26 @@
 import React, { useEffect } from "react";
 
-import { Box, Button, Container, Image } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Carousel,
+  Container,
+  HStack,
+  IconButton,
+  Image,
+} from "@chakra-ui/react";
 import { VStack, Text } from "@chakra-ui/react";
 import { Card } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
 import { useProductStore } from "../store/product";
 import { useColorMode } from "../components/ui/color-mode";
+import {
+  LuChevronLeft,
+  LuChevronRight,
+  LuMouse,
+  LuMoveHorizontal,
+} from "react-icons/lu";
 
 const HomePage = () => {
   const products = useProductStore((state) => state.products);
@@ -56,14 +70,47 @@ const HomePage = () => {
               maxW="sm"
               overflow="hidden"
             >
-              <Image
-                src={
-                  product.image ||
-                  "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
-                }
-                alt={product.name}
-                style={{ borderRadius: "8px 8px 0 0" }}
-              />
+              <Carousel.Root
+                slideCount={product.images.length}
+                maxW="xl"
+                mx="auto"
+                allowMouseDrag
+              >
+                <Carousel.ItemGroup>
+                  {product.images.map((item, index) => (
+                    <Carousel.Item key={index} index={index}>
+                      <Box w="100%" h="300px" rounded="lg" fontSize="2.5rem">
+                        <Image
+                          aspectRatio="16/9"
+                          src={item}
+                          alt={product.name}
+                          w="100%"
+                          h="100%"
+                          objectFit="cover"
+                          borderRadius="md"
+                        />
+                      </Box>
+                    </Carousel.Item>
+                  ))}
+                </Carousel.ItemGroup>
+
+                <Carousel.Control justifyContent="center" gap="4">
+                  <Carousel.PrevTrigger asChild>
+                    <IconButton size="xs" variant="ghost">
+                      <LuChevronLeft />
+                    </IconButton>
+                  </Carousel.PrevTrigger>
+
+                  <Carousel.Indicators />
+
+                  <Carousel.NextTrigger asChild>
+                    <IconButton size="xs" variant="ghost">
+                      <LuChevronRight />
+                    </IconButton>
+                  </Carousel.NextTrigger>
+                </Carousel.Control>
+              </Carousel.Root>
+
               <Card.Body gap="2">
                 <Card.Title>{product.name}</Card.Title>
                 <Card.Description>

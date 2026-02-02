@@ -1,17 +1,16 @@
-import React from "react";
-import { useState } from "react";
-
+import React, { useState } from "react";
 import {
   Container,
   Input,
   Button,
   Text,
   Textarea,
-  FileUpload,
+  Image,
+  HStack,
+  VStack,
+  Box,
 } from "@chakra-ui/react";
-import { Box, VStack } from "@chakra-ui/react";
 import { toaster } from "../components/ui/toaster.jsx";
-
 import { useParsedPrice } from "../store/parse_price.js";
 import { useProductStore } from "../store/product.js";
 import { useColorMode } from "../components/ui/color-mode.jsx";
@@ -19,70 +18,76 @@ import { useColorMode } from "../components/ui/color-mode.jsx";
 const CreatePage = () => {
   const { colorMode } = useColorMode();
   const { parsePrice } = useParsedPrice();
+  const { createProduct } = useProductStore();
 
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
-    image: "",
+    images: [],
     description: "",
   });
+
   const [uploading, setUploading] = useState(false);
 
-  const { createProduct } = useProductStore();
-
-  const [files, setFiles] = useState([]);
-  const [fileKey, setFileKey] = useState(0);
-
-  const handleImageUpload = async (file) => {
+  // --- Handle multiple file uploads ---
+  const handleImagesUpload = async (files) => {
     setUploading(true);
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
+    try {
+      const base64Images = await Promise.all(
+        Array.from(files).map(
+          (file) =>
+            new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => resolve(reader.result);
+              reader.readAsDataURL(file);
+            }),
+        ),
+      );
 
-    reader.onloadend = async () => {
-      try {
-        const response = await fetch("/api/upload", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ image: reader.result }),
-        });
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ images: base64Images }),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (data.success) {
-          setNewProduct((newProduct) => ({
-            ...newProduct,
-            image: data.url,
-          }));
-          toaster.create({
-            title: "Image Uploaded",
-            description: "Image uploaded successfully.",
-            type: "success",
-          });
-        } else {
-          toaster.create({
-            title: "Upload Failed",
-            description: data.message || "Failed to upload image",
-            type: "error",
-          });
-        }
-      } catch (error) {
+      if (data.success) {
+        setNewProduct((prev) => ({
+          ...prev,
+          images: [...prev.images, ...data.urls],
+        }));
         toaster.create({
-          title: "Upload Error",
-          description:
-            error.message || "An error occurred while uploading the image",
+          title: "Images Uploaded",
+          description: "All images uploaded successfully",
+          type: "success",
+        });
+      } else {
+        toaster.create({
+          title: "Upload Failed",
+          description: data.message || "Failed to upload images",
           type: "error",
         });
-      } finally {
-        setUploading(false);
       }
-    };
+    } catch (err) {
+      toaster.create({
+        title: "Upload Error",
+        description: err.message || "An error occurred while uploading images",
+        type: "error",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
+  // --- Handle product creation ---
   const handleCreateProduct = async () => {
-    // Validation
-
-    if (!newProduct.name || !newProduct.price || !newProduct.image) {
+    if (
+      !newProduct.name ||
+      !newProduct.price ||
+      newProduct.images.length === 0
+    ) {
       toaster.create({
         title: "Validation Error",
         description: "Please fill in all required fields",
@@ -91,14 +96,11 @@ const CreatePage = () => {
       return;
     }
 
-    // Parse price
-
     const parsedPrice = parsePrice(newProduct.price);
-
     if (parsedPrice === null || parsedPrice <= 0) {
       toaster.create({
         title: "Invalid price",
-        description: "Please enter a valid price (e.g. 1200 or 1.200,00)",
+        description: "Please enter a valid price",
         type: "error",
       });
       return;
@@ -129,11 +131,9 @@ const CreatePage = () => {
       setNewProduct({
         name: "",
         price: "",
-        image: "",
+        images: [],
         description: "",
       });
-      setFiles([]);
-      setFileKey((k) => k + 1);
     }
   };
 
@@ -150,8 +150,9 @@ const CreatePage = () => {
           gradientTo="blue.500"
           bgClip={"text"}
         >
-          Current Products ⛷️
+          Create New Product
         </Text>
+
         <Box
           w={"full"}
           background={colorMode === "light" ? "white" : "gray.900"}
@@ -163,58 +164,57 @@ const CreatePage = () => {
           <VStack spacing={4}>
             <Input
               placeholder="Product Name"
-              name="name"
               value={newProduct.name}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, name: e.target.value })
               }
             />
+
             <Input
               placeholder="Price"
-              name="price"
               value={newProduct.price}
               onChange={(e) =>
-                setNewProduct({
-                  ...newProduct,
-                  price: e.target.value,
-                })
+                setNewProduct({ ...newProduct, price: e.target.value })
               }
             />
 
-            <FileUpload.Root
-              key={fileKey}
-              value={files}
-              onValueChange={setFiles}
-            >
-              <FileUpload.HiddenInput
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files[0];
-                  if (file) handleImageUpload(file);
-                }}
-              />
-              <FileUpload.Trigger asChild>
-                <Button variant="outline" size="sm">
-                  Upload image
-                </Button>
-              </FileUpload.Trigger>
-              <FileUpload.List />
-            </FileUpload.Root>
+            {/* --- Multiple Image Upload --- */}
+            <Input
+              alignContent="center"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) => handleImagesUpload(e.target.files)}
+            />
+            {newProduct.images.length > 0 && (
+              <HStack spacing={2} mt={2} wrap="wrap">
+                {newProduct.images.map((url, idx) => (
+                  <Image
+                    key={idx}
+                    src={url}
+                    boxSize="80px"
+                    objectFit="cover"
+                    borderRadius="4px"
+                  />
+                ))}
+              </HStack>
+            )}
+
             <Textarea
               placeholder="Write a short description of the product"
-              name="description"
               value={newProduct.description}
               onChange={(e) =>
                 setNewProduct({ ...newProduct, description: e.target.value })
               }
             />
+
             <Button
               colorScheme="blue"
               onClick={handleCreateProduct}
-              isDisabled={!newProduct.image || uploading}
+              isDisabled={newProduct.images.length === 0 || uploading}
               w="full"
             >
-              {uploading ? "Uploading image..." : "Create Product"}
+              {uploading ? "Uploading images..." : "Create Product"}
             </Button>
           </VStack>
         </Box>

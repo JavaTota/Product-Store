@@ -6,7 +6,13 @@ export const useProductStore = create((set) => ({
   setProducts: (products) => set({ products }),
 
   createProduct: async (newProduct) => {
-    if (!newProduct.name || !newProduct.price || !newProduct.image) {
+    if (
+      !newProduct.name ||
+      !newProduct.price ||
+      !newProduct.images ||
+      newProduct.images.length === 0 ||
+      !newProduct.description
+    ) {
       return { success: false, message: "All fields are required" };
     }
 
