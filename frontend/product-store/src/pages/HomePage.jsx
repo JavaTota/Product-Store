@@ -8,6 +8,8 @@ import {
   HStack,
   IconButton,
   Image,
+  Portal,
+  Select,
 } from "@chakra-ui/react";
 import { VStack, Text } from "@chakra-ui/react";
 import { Card } from "@chakra-ui/react";
@@ -15,17 +17,12 @@ import { Link } from "react-router-dom";
 
 import { useProductStore } from "../store/product";
 import { useColorMode } from "../components/ui/color-mode";
-import {
-  LuChevronLeft,
-  LuChevronRight,
-  LuMouse,
-  LuMoveHorizontal,
-} from "react-icons/lu";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 
 const HomePage = () => {
   const products = useProductStore((state) => state.products);
-
   const getProducts = useProductStore((state) => state.getProducts);
+  const categories = useProductStore((state) => state.categories);
 
   const { colorMode } = useColorMode();
   const deleteProduct = useProductStore((state) => state.deleteProduct);

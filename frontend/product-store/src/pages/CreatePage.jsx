@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Container,
   Input,
@@ -9,25 +9,39 @@ import {
   HStack,
   VStack,
   Box,
+  Select,
+  Portal,
+  createListCollection,
 } from "@chakra-ui/react";
+
 import { toaster } from "../components/ui/toaster.jsx";
+import { useColorMode } from "../components/ui/color-mode.jsx";
+
 import { useParsedPrice } from "../store/parse_price.js";
 import { useProductStore } from "../store/product.js";
-import { useColorMode } from "../components/ui/color-mode.jsx";
+import { useCategoryStore } from "../store/categories.js";
 
 const CreatePage = () => {
   const { colorMode } = useColorMode();
   const { parsePrice } = useParsedPrice();
   const { createProduct } = useProductStore();
 
+  const categories = useCategoryStore((s) => s.categories);
+  const getCategories = useCategoryStore((s) => s.getCategories);
+
   const [newProduct, setNewProduct] = useState({
     name: "",
     price: "",
     images: [],
     description: "",
+    category: "",
   });
-
   const [uploading, setUploading] = useState(false);
+
+  // --- Fetch categories on mount ---
+  useEffect(() => {
+    getCategories();
+  }, [getCategories]);
 
   // --- Handle multiple file uploads ---
   const handleImagesUpload = async (files) => {
@@ -133,13 +147,27 @@ const CreatePage = () => {
         price: "",
         images: [],
         description: "",
+        category: "",
       });
     }
   };
 
+  // --- Prepare category collection for Select component ---
+  const categoryCollection = React.useMemo(
+    () =>
+      createListCollection({
+        items: categories.map((cat) => ({
+          label: cat.name,
+          value: cat._id, // or cat.slug
+        })),
+      }),
+    [categories],
+  );
+
   return (
     <Container maxW={"container.xl"} textAlign={"center"} py={12}>
       <VStack spacing={8}>
+        {/* --- Page Title --- */}
         <Text
           fontSize={{ base: "22", sm: "28" }}
           fontWeight={"bold"}
@@ -153,6 +181,7 @@ const CreatePage = () => {
           Create New Product
         </Text>
 
+        {/* --- Product Creation Form --- */}
         <Box
           w={"full"}
           background={colorMode === "light" ? "white" : "gray.900"}
@@ -162,6 +191,7 @@ const CreatePage = () => {
           borderRadius={"8px"}
         >
           <VStack spacing={4}>
+            {/* --- Product Name Input --- */}
             <Input
               placeholder="Product Name"
               value={newProduct.name}
@@ -170,6 +200,7 @@ const CreatePage = () => {
               }
             />
 
+            {/* --- Product Price Input --- */}
             <Input
               placeholder="Price"
               value={newProduct.price}
@@ -186,6 +217,8 @@ const CreatePage = () => {
               multiple
               onChange={(e) => handleImagesUpload(e.target.files)}
             />
+
+            {/* --- Display Uploaded Images --- */}
             {newProduct.images.length > 0 && (
               <HStack spacing={2} mt={2} wrap="wrap">
                 {newProduct.images.map((url, idx) => (
@@ -200,6 +233,7 @@ const CreatePage = () => {
               </HStack>
             )}
 
+            {/* --- Product Description Input --- */}
             <Textarea
               placeholder="Write a short description of the product"
               value={newProduct.description}
@@ -208,6 +242,41 @@ const CreatePage = () => {
               }
             />
 
+            {/* --- Category Selection Dropdown --- */}
+            <Select.Root
+              collection={categoryCollection}
+              value={newProduct.category}
+              onValueChange={(e) =>
+                setNewProduct({ ...newProduct, category: e.value })
+              }
+              size="sm"
+            >
+              <Select.HiddenSelect />
+
+              <Select.Control>
+                <Select.Trigger>
+                  <Select.ValueText placeholder="Select category" />
+                </Select.Trigger>
+                <Select.IndicatorGroup>
+                  <Select.Indicator />
+                </Select.IndicatorGroup>
+              </Select.Control>
+
+              <Portal>
+                <Select.Positioner>
+                  <Select.Content>
+                    {categoryCollection.items.map((item) => (
+                      <Select.Item key={item.value} item={item}>
+                        {item.label}
+                        <Select.ItemIndicator />
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Positioner>
+              </Portal>
+            </Select.Root>
+
+            {/* --- Create Product Button --- */}
             <Button
               colorScheme="blue"
               onClick={handleCreateProduct}
