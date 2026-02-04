@@ -107,8 +107,9 @@ const HomePage = () => {
         {/* --- Category Filter Dropdown --- */}
 
         <Box
-          display="grid"
-          gridTemplateColumns="repeat(3, minmax(0, 1fr))"
+          display={{ base: "flex", sm: "grid" }}
+          flexDirection={{ base: "column", sm: "unset" }}
+          gridTemplateColumns={{ sm: "repeat(3, minmax(0, 1fr))" }}
           justifyContent="center"
           gap="16px"
         >
@@ -164,7 +165,7 @@ const HomePage = () => {
                 </Carousel.Control>
               </Carousel.Root>
 
-              <Card.Body gap="2">
+              <Card.Body gap="2" mb={4}>
                 <Card.Title>{product.name}</Card.Title>
                 <Card.Description>
                   {product.description || "No description available."}
@@ -178,14 +179,15 @@ const HomePage = () => {
                   ${Number(product.price).toFixed(2)}
                 </Text>
               </Card.Body>
-              <Card.Footer gap="2">
+              <Card.Footer gap="5">
                 <Button
                   variant="solid"
                   onClick={() => handleDelete(product._id)}
+                  padding={4}
                 >
                   Delete
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" padding={4}>
                   <Link to={`/update/${product._id}`}>Update</Link>
                 </Button>
               </Card.Footer>

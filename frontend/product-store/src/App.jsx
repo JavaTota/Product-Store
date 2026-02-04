@@ -15,7 +15,13 @@ const App = () => {
   return (
     <>
       <Toaster />
-      <Box minH={"100vh"}>
+      <Box
+        minH={"100vh"}
+        display={"flex"}
+        flexDirection={"column"}
+        justifyContent={"center"}
+        alignItems={"center"}
+      >
         <Navbar />
         <Routes>
           <Route path="/" element={<HomePage />} />

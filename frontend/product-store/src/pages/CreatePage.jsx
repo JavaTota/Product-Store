@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Container,
   Input,
@@ -37,6 +37,8 @@ const CreatePage = () => {
     category: "",
   });
   const [uploading, setUploading] = useState(false);
+
+  const fileInputRef = useRef(null);
 
   // --- Fetch categories on mount ---
   useEffect(() => {
@@ -100,7 +102,8 @@ const CreatePage = () => {
     if (
       !newProduct.name ||
       !newProduct.price ||
-      newProduct.images.length === 0
+      newProduct.images.length === 0 ||
+      !newProduct.category
     ) {
       toaster.create({
         title: "Validation Error",
@@ -149,23 +152,26 @@ const CreatePage = () => {
         description: "",
         category: "",
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
   // --- Prepare category collection for Select component ---
-  const categoryCollection = React.useMemo(
-    () =>
-      createListCollection({
-        items: categories.map((cat) => ({
-          label: cat.name,
-          value: cat._id, // or cat.slug
-        })),
-      }),
-    [categories],
-  );
+  const categoryCollection = createListCollection({
+    items: categories.map((cat) => ({
+      label: cat.name,
+      value: cat._id,
+    })),
+  });
 
   return (
-    <Container maxW={"container.xl"} textAlign={"center"} py={12}>
+    <Container
+      maxW={{ base: "1100px", sm: "1200px" }}
+      textAlign={"center"}
+      py={12}
+    >
       <VStack spacing={8}>
         {/* --- Page Title --- */}
         <Text
@@ -211,9 +217,11 @@ const CreatePage = () => {
 
             {/* --- Multiple Image Upload --- */}
             <Input
+              ref={fileInputRef}
               alignContent="center"
               type="file"
               accept="image/*"
+              padding={1}
               multiple
               onChange={(e) => handleImagesUpload(e.target.files)}
             />
@@ -245,10 +253,11 @@ const CreatePage = () => {
             {/* --- Category Selection Dropdown --- */}
             <Select.Root
               collection={categoryCollection}
-              value={newProduct.category}
-              onValueChange={(e) =>
-                setNewProduct({ ...newProduct, category: e.value })
-              }
+              value={newProduct.category ? [newProduct.category] : []}
+              onValueChange={(e) => {
+                console.log("Selected category:", e.value);
+                setNewProduct({ ...newProduct, category: e.value[0] || "" });
+              }}
               size="sm"
             >
               <Select.HiddenSelect />
@@ -266,7 +275,7 @@ const CreatePage = () => {
                 <Select.Positioner>
                   <Select.Content>
                     {categoryCollection.items.map((item) => (
-                      <Select.Item key={item.value} item={item}>
+                      <Select.Item padding={4} key={item.value} item={item}>
                         {item.label}
                         <Select.ItemIndicator />
                       </Select.Item>

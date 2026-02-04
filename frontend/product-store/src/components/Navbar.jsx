@@ -16,13 +16,13 @@ const Navbar = () => {
       maxW={"full"}
       px={4}
       background={colorMode === "light" ? "gray.200" : "gray.900"}
-      padding={"2"}
+      padding={4}
     >
       <Flex
         h={16}
         alignItems={"center"}
         justifyContent={"space-between"}
-        flexDir={{ base: "column", sm: "row" }}
+        flexDir={"row"}
       >
         <Text
           fontSize={{ base: "22", sm: "28" }}
