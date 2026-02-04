@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   Box,
   Button,
   Carousel,
   Container,
-  HStack,
+  createListCollection,
   IconButton,
   Image,
   Portal,
@@ -18,26 +18,45 @@ import { Link } from "react-router-dom";
 import { useProductStore } from "../store/product";
 import { useColorMode } from "../components/ui/color-mode";
 import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
+import { useCategoryStore } from "../store/categories";
 
 const HomePage = () => {
   const products = useProductStore((state) => state.products);
   const getProducts = useProductStore((state) => state.getProducts);
-  const categories = useProductStore((state) => state.categories);
+  const categories = useCategoryStore((state) => state.categories);
+  const getCategories = useCategoryStore((s) => s.getCategories);
 
   const { colorMode } = useColorMode();
+
   const deleteProduct = useProductStore((state) => state.deleteProduct);
+
+  const [selectedCategory, setSelectedCategory] = useState("");
+
+  const filteredProducts =
+    selectedCategory === "" || selectedCategory.length === 0
+      ? products
+      : products.filter((p) => p.category === selectedCategory);
 
   const handleDelete = async (id) => {
     await deleteProduct(id);
   };
 
+  const categoryCollection = createListCollection({
+    items: [
+      { label: "All Categories", value: "" },
+      ...categories.map((cat) => ({ label: cat.name, value: cat._id })),
+    ],
+  });
+
   useEffect(() => {
     getProducts();
-  }, [getProducts]);
+    getCategories();
+  }, [getProducts, getCategories]);
 
   return (
     <Container maxW={"container.xl"} textAlign={"center"} py={12}>
       <VStack spacing={8}>
+        {/* --- Page Title --- */}
         <Text
           fontSize={{ base: "22", sm: "28" }}
           fontWeight={"bold"}
@@ -50,13 +69,50 @@ const HomePage = () => {
         >
           Current Products ⛷️
         </Text>
+        <Box>
+          <Select.Root
+            collection={categoryCollection}
+            value={selectedCategory ? [selectedCategory] : []}
+            onValueChange={(e) => {
+              setSelectedCategory(e.value[0] || "");
+            }}
+            size="sm"
+            width="300px"
+          >
+            <Select.HiddenSelect />
+
+            <Select.Control>
+              <Select.Trigger>
+                <Select.ValueText placeholder="Filter by category" />
+              </Select.Trigger>
+              <Select.IndicatorGroup>
+                <Select.Indicator />
+              </Select.IndicatorGroup>
+            </Select.Control>
+
+            <Portal>
+              <Select.Positioner>
+                <Select.Content>
+                  {categoryCollection.items.map((item) => (
+                    <Select.Item key={item.value} item={item}>
+                      {item.label}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Positioner>
+            </Portal>
+          </Select.Root>
+        </Box>
+
+        {/* --- Category Filter Dropdown --- */}
+
         <Box
           display="grid"
           gridTemplateColumns="repeat(3, minmax(0, 1fr))"
           justifyContent="center"
           gap="16px"
         >
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <Card.Root
               key={product._id}
               m="4px"

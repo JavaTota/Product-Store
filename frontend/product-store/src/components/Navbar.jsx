@@ -16,6 +16,7 @@ const Navbar = () => {
       maxW={"full"}
       px={4}
       background={colorMode === "light" ? "gray.200" : "gray.900"}
+      padding={"2"}
     >
       <Flex
         h={16}
